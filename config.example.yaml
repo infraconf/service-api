@@ -1,0 +1,17 @@
+workload_api_path: unix:///tmp/spire-agent/public/api.sock
+
+server:
+  address: :8443
+  authorized_peers:
+    spiffe_ids:
+      - spiffe://example.org/client
+    trust_domains: []
+    allow_any: false
+
+client:
+  target: localhost:8443
+  authorized_peers:
+    spiffe_ids:
+      - spiffe://example.org/server
+    trust_domains: []
+    allow_any: false

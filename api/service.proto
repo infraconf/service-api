@@ -1,0 +1,80 @@
+syntax = "proto3";
+
+package service.v1;
+
+option go_package = "github.com/infraconf/service-api/api;servicev1";
+
+service BackendRuntime {
+    rpc Invoke(InvokeRequest) returns (InvokeResponse);
+}
+
+message InvokeRequest {
+    Operation operation = 1;
+    CallerContext caller = 2;
+    optional Payload payload = 3;
+    Attributes attributes = 4;
+}
+
+message Operation {
+    string id = 1;
+}
+
+message CallerContext {
+    string subject_id = 1;
+    SubjectType subject_type = 2;
+    string organization_id = 3;
+    repeated string group_ids = 4;
+    repeated PermissionGrant grants = 5;
+    optional string authentication_id = 6;
+}
+
+enum SubjectType {
+    SUBJECT_TYPE_UNSPECIFIED = 0;
+    SUBJECT_TYPE_USER = 1;
+    SUBJECT_TYPE_SERVICE_ACCOUNT = 2;
+    SUBJECT_TYPE_SYSTEM = 3;
+    SUBJECT_TYPE_ANONYMOUS = 4;
+}
+
+message PermissionGrant {
+    PermissionTarget target = 1;
+    PermissionScope scope = 2;
+    PermissionEffect effect = 3;
+}
+
+message PermissionTarget {
+    string module = 1;
+    string resource_type = 2;
+    string action = 3;
+}
+
+message PermissionScope {
+    string organization_id = 1;
+    string group_id = 2;
+    string object_id = 3;
+}
+
+enum PermissionEffect {
+    PERMISSION_EFFECT_UNSPECIFIED = 0;
+    PERMISSION_EFFECT_ALLOW = 1;
+    PERMISSION_EFFECT_DENY = 2;
+}
+
+message Payload {
+    string media_type = 1;
+    optional string schema = 2;
+    bytes data = 3;
+}
+
+message Attributes {
+    map<string, AttributeValues> values = 1;
+}
+
+message AttributeValues {
+    repeated string values = 1;
+}
+
+message InvokeResponse {
+    optional Payload payload = 1;
+    Attributes attributes = 2;
+}
