@@ -17,13 +17,13 @@ type Server struct {
 	Source   *mtls.Source
 }
 
-func NewServer(ctx context.Context, cfg mtls.Config, opts ...grpc.ServerOption) (*Server, error) {
-	source, err := mtls.NewSource(ctx, cfg.WorkloadAPIPath)
+func NewServer(ctx context.Context, workloadAPIPath string, cfg mtls.ServerConfig, opts ...grpc.ServerOption) (*Server, error) {
+	source, err := mtls.NewSource(ctx, workloadAPIPath)
 	if err != nil {
 		return nil, err
 	}
 
-	tlsConfig, err := mtls.ServerTLSConfig(source, cfg.Server)
+	tlsConfig, err := mtls.ServerTLSConfig(source, cfg)
 	if err != nil {
 		source.Close()
 		return nil, err
@@ -39,17 +39,17 @@ func NewServer(ctx context.Context, cfg mtls.Config, opts ...grpc.ServerOption) 
 	}, nil
 }
 
-func ListenAndServe(ctx context.Context, cfg mtls.Config, register func(grpc.ServiceRegistrar), opts ...grpc.ServerOption) (*Server, error) {
-	if cfg.Server.Address == "" {
+func ListenAndServe(ctx context.Context, workloadAPIPath string, cfg mtls.ServerConfig, register func(grpc.ServiceRegistrar), opts ...grpc.ServerOption) (*Server, error) {
+	if cfg.Address == "" {
 		return nil, fmt.Errorf("missing server address")
 	}
 
-	listener, err := net.Listen("tcp", cfg.Server.Address)
+	listener, err := net.Listen("tcp", cfg.Address)
 	if err != nil {
-		return nil, fmt.Errorf("listen on %s: %w", cfg.Server.Address, err)
+		return nil, fmt.Errorf("listen on %s: %w", cfg.Address, err)
 	}
 
-	server, err := NewServer(ctx, cfg, opts...)
+	server, err := NewServer(ctx, workloadAPIPath, cfg, opts...)
 	if err != nil {
 		listener.Close()
 		return nil, err
@@ -73,14 +73,6 @@ func ListenAndServe(ctx context.Context, cfg mtls.Config, register func(grpc.Ser
 	}()
 
 	return server, nil
-}
-
-func ListenAndServeConfigFile(ctx context.Context, path string, register func(grpc.ServiceRegistrar), opts ...grpc.ServerOption) (*Server, error) {
-	cfg, err := mtls.LoadConfigFile(path)
-	if err != nil {
-		return nil, err
-	}
-	return ListenAndServe(ctx, *cfg, register, opts...)
 }
 
 func (s *Server) Close() error {

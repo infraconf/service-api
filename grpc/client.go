@@ -14,17 +14,25 @@ type ClientConn struct {
 	Source *mtls.Source
 }
 
-func Dial(ctx context.Context, cfg mtls.Config, opts ...grpc.DialOption) (*ClientConn, error) {
-	if cfg.Client.Target == "" {
-		return nil, fmt.Errorf("missing client target")
+type TargetConfig struct {
+	WorkloadAPIPath string
+	Addr            string
+	SPIFFEID        string
+}
+
+func Dial(ctx context.Context, target TargetConfig, opts ...grpc.DialOption) (*ClientConn, error) {
+	if target.Addr == "" {
+		return nil, fmt.Errorf("missing client address")
 	}
 
-	source, err := mtls.NewSource(ctx, cfg.WorkloadAPIPath)
+	source, err := mtls.NewSource(ctx, target.WorkloadAPIPath)
 	if err != nil {
 		return nil, err
 	}
 
-	tlsConfig, err := mtls.ClientTLSConfig(source, cfg.Client)
+	tlsConfig, err := mtls.ClientTLSConfig(source, mtls.AuthorizationConfig{
+		SPIFFEIDs: []string{target.SPIFFEID},
+	})
 	if err != nil {
 		source.Close()
 		return nil, err
@@ -34,21 +42,13 @@ func Dial(ctx context.Context, cfg mtls.Config, opts ...grpc.DialOption) (*Clien
 		grpc.WithTransportCredentials(credentials.NewTLS(tlsConfig)),
 	}, opts...)
 
-	conn, err := grpc.NewClient(cfg.Client.Target, dialOpts...)
+	conn, err := grpc.NewClient(target.Addr, dialOpts...)
 	if err != nil {
 		source.Close()
 		return nil, fmt.Errorf("create gRPC client: %w", err)
 	}
 
 	return &ClientConn{ClientConn: conn, Source: source}, nil
-}
-
-func DialConfigFile(ctx context.Context, path string, opts ...grpc.DialOption) (*ClientConn, error) {
-	cfg, err := mtls.LoadConfigFile(path)
-	if err != nil {
-		return nil, err
-	}
-	return Dial(ctx, *cfg, opts...)
 }
 
 func (c *ClientConn) Close() error {

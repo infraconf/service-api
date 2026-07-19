@@ -5,6 +5,8 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
+	"log/slog"
+	"slices"
 
 	"github.com/spiffe/go-spiffe/v2/spiffeid"
 	"github.com/spiffe/go-spiffe/v2/spiffetls/tlsconfig"
@@ -45,12 +47,12 @@ func ServerTLSConfig(source *Source, cfg ServerConfig) (*tls.Config, error) {
 	return tlsconfig.MTLSServerConfig(source.X509Source, source.X509Source, authorizer), nil
 }
 
-func ClientTLSConfig(source *Source, cfg ClientConfig) (*tls.Config, error) {
+func ClientTLSConfig(source *Source, authorizedPeers AuthorizationConfig) (*tls.Config, error) {
 	if source == nil || source.X509Source == nil {
 		return nil, fmt.Errorf("missing SPIFFE X.509 source")
 	}
 
-	authorizer, err := NewAuthorizer(cfg.AuthorizedPeers)
+	authorizer, err := NewAuthorizer(authorizedPeers)
 	if err != nil {
 		return nil, err
 	}
@@ -89,6 +91,10 @@ func PeerSPIFFEID(ctx context.Context) (spiffeid.ID, error) {
 }
 
 func NewAuthorizer(cfg AuthorizationConfig) (tlsconfig.Authorizer, error) {
+	logger := slog.Default()
+	if cfg.Logger != nil {
+		logger = cfg.Logger
+	}
 	if cfg.AllowAny && len(cfg.SPIFFEIDs) == 0 && len(cfg.TrustDomains) == 0 {
 		return tlsconfig.AuthorizeAny(), nil
 	}
@@ -116,18 +122,15 @@ func NewAuthorizer(cfg AuthorizationConfig) (tlsconfig.Authorizer, error) {
 	}
 
 	return func(actual spiffeid.ID, _ [][]*x509.Certificate) error {
-		for _, allowed := range ids {
-			if actual == allowed {
-				return nil
-			}
+		if slices.Contains(ids, actual) {
+			return nil
 		}
 
-		for _, allowed := range trustDomains {
-			if actual.TrustDomain() == allowed {
-				return nil
-			}
+		if slices.Contains(trustDomains, actual.TrustDomain()) {
+			return nil
 		}
 
+		logger.Debug("SPIFFE ID authorization failed", "id", actual.String())
 		return fmt.Errorf("SPIFFE ID %q is not authorized", actual.String())
 	}, nil
 }
