@@ -29,7 +29,7 @@ func isMatchingScope(grant *servicev1.PermissionScope, res *servicev1.Permission
 	}
 	var org, group, owner, object bool
 
-	if grant.ObjectId == CONTEXT_SYMBOL {
+	if grant.OrganizationId == CONTEXT_SYMBOL {
 		org = res.OrganizationId == cctx.OrganizationId
 	} else {
 		org = grant.OrganizationId == WILDCARD_SYMBOL || grant.OrganizationId == res.OrganizationId

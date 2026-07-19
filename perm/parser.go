@@ -2,6 +2,7 @@ package perm
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
 	servicev1 "github.com/infraconf/service-api/api"
@@ -85,4 +86,19 @@ func ParsePermissionGrant(grant string) ([]*servicev1.PermissionGrant, error) {
 	}
 
 	return list, nil
+}
+
+func ParsePermissionPatterns(patterns []string) ([]*servicev1.PermissionGrant, error) {
+	grants := make([]*servicev1.PermissionGrant, 0, len(patterns))
+
+	for i, pattern := range patterns {
+		parsed, err := ParsePermissionGrant(pattern)
+		if err != nil {
+			return nil, fmt.Errorf("parse permission pattern %d %q: %w", i, pattern, err)
+		}
+
+		grants = append(grants, parsed...)
+	}
+
+	return grants, nil
 }
