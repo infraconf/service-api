@@ -22,10 +22,11 @@ message Operation {
 message CallerContext {
     string subject_id = 1;
     SubjectType subject_type = 2;
-    string organization_id = 3;
-    repeated string group_ids = 4;
-    repeated PermissionGrant grants = 5;
-    optional string authentication_id = 6;
+    string user_id = 3;
+    string organization_id = 4;
+    repeated string group_ids = 5;
+    repeated PermissionGrant grants = 6;
+    optional string authentication_id = 7;
 }
 
 enum SubjectType {
@@ -51,7 +52,8 @@ message PermissionTarget {
 message PermissionScope {
     string organization_id = 1;
     string group_id = 2;
-    string object_id = 3;
+    string owner_id = 3;
+    string object_id = 4;
 }
 
 enum PermissionEffect {

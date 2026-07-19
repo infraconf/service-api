@@ -241,10 +241,11 @@ type CallerContext struct {
 	state            protoimpl.MessageState `protogen:"open.v1"`
 	SubjectId        string                 `protobuf:"bytes,1,opt,name=subject_id,json=subjectId,proto3" json:"subject_id,omitempty"`
 	SubjectType      SubjectType            `protobuf:"varint,2,opt,name=subject_type,json=subjectType,proto3,enum=service.v1.SubjectType" json:"subject_type,omitempty"`
-	OrganizationId   string                 `protobuf:"bytes,3,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
-	GroupIds         []string               `protobuf:"bytes,4,rep,name=group_ids,json=groupIds,proto3" json:"group_ids,omitempty"`
-	Grants           []*PermissionGrant     `protobuf:"bytes,5,rep,name=grants,proto3" json:"grants,omitempty"`
-	AuthenticationId *string                `protobuf:"bytes,6,opt,name=authentication_id,json=authenticationId,proto3,oneof" json:"authentication_id,omitempty"`
+	UserId           string                 `protobuf:"bytes,3,opt,name=user_id,json=userId,proto3" json:"user_id,omitempty"`
+	OrganizationId   string                 `protobuf:"bytes,4,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
+	GroupIds         []string               `protobuf:"bytes,5,rep,name=group_ids,json=groupIds,proto3" json:"group_ids,omitempty"`
+	Grants           []*PermissionGrant     `protobuf:"bytes,6,rep,name=grants,proto3" json:"grants,omitempty"`
+	AuthenticationId *string                `protobuf:"bytes,7,opt,name=authentication_id,json=authenticationId,proto3,oneof" json:"authentication_id,omitempty"`
 	unknownFields    protoimpl.UnknownFields
 	sizeCache        protoimpl.SizeCache
 }
@@ -291,6 +292,13 @@ func (x *CallerContext) GetSubjectType() SubjectType {
 		return x.SubjectType
 	}
 	return SubjectType_SUBJECT_TYPE_UNSPECIFIED
+}
+
+func (x *CallerContext) GetUserId() string {
+	if x != nil {
+		return x.UserId
+	}
+	return ""
 }
 
 func (x *CallerContext) GetOrganizationId() string {
@@ -445,7 +453,8 @@ type PermissionScope struct {
 	state          protoimpl.MessageState `protogen:"open.v1"`
 	OrganizationId string                 `protobuf:"bytes,1,opt,name=organization_id,json=organizationId,proto3" json:"organization_id,omitempty"`
 	GroupId        string                 `protobuf:"bytes,2,opt,name=group_id,json=groupId,proto3" json:"group_id,omitempty"`
-	ObjectId       string                 `protobuf:"bytes,3,opt,name=object_id,json=objectId,proto3" json:"object_id,omitempty"`
+	OwnerId        string                 `protobuf:"bytes,3,opt,name=owner_id,json=ownerId,proto3" json:"owner_id,omitempty"`
+	ObjectId       string                 `protobuf:"bytes,4,opt,name=object_id,json=objectId,proto3" json:"object_id,omitempty"`
 	unknownFields  protoimpl.UnknownFields
 	sizeCache      protoimpl.SizeCache
 }
@@ -490,6 +499,13 @@ func (x *PermissionScope) GetOrganizationId() string {
 func (x *PermissionScope) GetGroupId() string {
 	if x != nil {
 		return x.GroupId
+	}
+	return ""
+}
+
+func (x *PermissionScope) GetOwnerId() string {
+	if x != nil {
+		return x.OwnerId
 	}
 	return ""
 }
@@ -717,15 +733,16 @@ const file_api_service_proto_rawDesc = "" +
 	"\n" +
 	"\b_payload\"\x1b\n" +
 	"\tOperation\x12\x0e\n" +
-	"\x02id\x18\x01 \x01(\tR\x02id\"\xad\x02\n" +
+	"\x02id\x18\x01 \x01(\tR\x02id\"\xc6\x02\n" +
 	"\rCallerContext\x12\x1d\n" +
 	"\n" +
 	"subject_id\x18\x01 \x01(\tR\tsubjectId\x12:\n" +
-	"\fsubject_type\x18\x02 \x01(\x0e2\x17.service.v1.SubjectTypeR\vsubjectType\x12'\n" +
-	"\x0forganization_id\x18\x03 \x01(\tR\x0eorganizationId\x12\x1b\n" +
-	"\tgroup_ids\x18\x04 \x03(\tR\bgroupIds\x123\n" +
-	"\x06grants\x18\x05 \x03(\v2\x1b.service.v1.PermissionGrantR\x06grants\x120\n" +
-	"\x11authentication_id\x18\x06 \x01(\tH\x00R\x10authenticationId\x88\x01\x01B\x14\n" +
+	"\fsubject_type\x18\x02 \x01(\x0e2\x17.service.v1.SubjectTypeR\vsubjectType\x12\x17\n" +
+	"\auser_id\x18\x03 \x01(\tR\x06userId\x12'\n" +
+	"\x0forganization_id\x18\x04 \x01(\tR\x0eorganizationId\x12\x1b\n" +
+	"\tgroup_ids\x18\x05 \x03(\tR\bgroupIds\x123\n" +
+	"\x06grants\x18\x06 \x03(\v2\x1b.service.v1.PermissionGrantR\x06grants\x120\n" +
+	"\x11authentication_id\x18\a \x01(\tH\x00R\x10authenticationId\x88\x01\x01B\x14\n" +
 	"\x12_authentication_id\"\xb0\x01\n" +
 	"\x0fPermissionGrant\x124\n" +
 	"\x06target\x18\x01 \x01(\v2\x1c.service.v1.PermissionTargetR\x06target\x121\n" +
@@ -734,11 +751,12 @@ const file_api_service_proto_rawDesc = "" +
 	"\x10PermissionTarget\x12\x16\n" +
 	"\x06module\x18\x01 \x01(\tR\x06module\x12#\n" +
 	"\rresource_type\x18\x02 \x01(\tR\fresourceType\x12\x16\n" +
-	"\x06action\x18\x03 \x01(\tR\x06action\"r\n" +
+	"\x06action\x18\x03 \x01(\tR\x06action\"\x8d\x01\n" +
 	"\x0fPermissionScope\x12'\n" +
 	"\x0forganization_id\x18\x01 \x01(\tR\x0eorganizationId\x12\x19\n" +
-	"\bgroup_id\x18\x02 \x01(\tR\agroupId\x12\x1b\n" +
-	"\tobject_id\x18\x03 \x01(\tR\bobjectId\"d\n" +
+	"\bgroup_id\x18\x02 \x01(\tR\agroupId\x12\x19\n" +
+	"\bowner_id\x18\x03 \x01(\tR\aownerId\x12\x1b\n" +
+	"\tobject_id\x18\x04 \x01(\tR\bobjectId\"d\n" +
 	"\aPayload\x12\x1d\n" +
 	"\n" +
 	"media_type\x18\x01 \x01(\tR\tmediaType\x12\x1b\n" +
