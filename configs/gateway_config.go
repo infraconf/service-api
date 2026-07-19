@@ -30,7 +30,8 @@ type BackendOperations struct {
 }
 
 type BackendRuntimeRegistration struct {
-	Name              string              `yaml:"name"`
-	InternalServiceID string              `yaml:"internal_service_id"`
-	Operations        []BackendOperations `yaml:"operations"`
+	Name                   string              `yaml:"name"`
+	InternalServiceID      string              `yaml:"internal_service_id"`
+	InternalServiceAddress string              `yaml:"internal_service_addr"`
+	Operations             []BackendOperations `yaml:"operations"`
 }
