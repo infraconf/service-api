@@ -18,7 +18,7 @@ func isMatchingTarget(grant *servicev1.PermissionTarget, res *servicev1.Permissi
 	if grant == nil || res == nil {
 		return false
 	}
-	return (grant.Module == WILDCARD_SYMBOL || grant.Module == res.Module) &&
+	return (grant.Namespace == WILDCARD_SYMBOL || grant.Namespace == res.Namespace) &&
 		(grant.ResourceType == WILDCARD_SYMBOL || grant.ResourceType == res.ResourceType) &&
 		(grant.Action == WILDCARD_SYMBOL || grant.Action == res.Action)
 }
@@ -29,10 +29,10 @@ func isMatchingScope(grant *servicev1.PermissionScope, res *servicev1.Permission
 	}
 	var org, group, owner, object bool
 
-	if grant.OrganizationId == CONTEXT_SYMBOL {
-		org = res.OrganizationId == cctx.OrganizationId
+	if grant.TenantId == CONTEXT_SYMBOL {
+		org = res.TenantId == cctx.TenantId
 	} else {
-		org = grant.OrganizationId == WILDCARD_SYMBOL || grant.OrganizationId == res.OrganizationId
+		org = grant.TenantId == WILDCARD_SYMBOL || grant.TenantId == res.TenantId
 	}
 
 	if grant.GroupId == CONTEXT_SYMBOL {

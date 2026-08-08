@@ -23,7 +23,7 @@ message CallerContext {
     string subject_id = 1;
     SubjectType subject_type = 2;
     string user_id = 3;
-    string organization_id = 4;
+    string tenant_id = 4;
     repeated string group_ids = 5;
     repeated PermissionGrant grants = 6;
     optional string authentication_id = 7;
@@ -44,13 +44,13 @@ message PermissionGrant {
 }
 
 message PermissionTarget {
-    string module = 1;
+    string namespace = 1;
     string resource_type = 2;
     string action = 3;
 }
 
 message PermissionScope {
-    string organization_id = 1;
+    string tenant_id = 1;
     string group_id = 2;
     string owner_id = 3;
     string object_id = 4;

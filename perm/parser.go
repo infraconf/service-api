@@ -21,7 +21,7 @@ func parsePermissionTarget(target string) ([]*servicev1.PermissionTarget, error)
 		list := make([]*servicev1.PermissionTarget, len(manage_actions))
 		for i := 0; i < len(manage_actions); i++ {
 			list[i] = &servicev1.PermissionTarget{
-				Module:       parts[0],
+				Namespace:    parts[0],
 				ResourceType: parts[1],
 				Action:       manage_actions[i],
 			}
@@ -30,7 +30,7 @@ func parsePermissionTarget(target string) ([]*servicev1.PermissionTarget, error)
 	} else {
 		return []*servicev1.PermissionTarget{
 			{
-				Module:       parts[0],
+				Namespace:    parts[0],
 				ResourceType: parts[1],
 				Action:       parts[2],
 			},
@@ -46,10 +46,10 @@ func parsePermissionScope(scope string) (*servicev1.PermissionScope, error) {
 	}
 
 	return &servicev1.PermissionScope{
-		OrganizationId: parts[0],
-		GroupId:        parts[1],
-		OwnerId:        parts[2],
-		ObjectId:       parts[3],
+		TenantId: parts[0],
+		GroupId:  parts[1],
+		OwnerId:  parts[2],
+		ObjectId: parts[3],
 	}, nil
 }
 
